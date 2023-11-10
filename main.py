@@ -1,3 +1,4 @@
+import argparse
 import csv
 import os
 import requests
@@ -106,8 +107,6 @@ def save_to_db(company_contact_list):
 
 
 def main(csv_file_path, title_filter):
-    csv_file_path = 'input.csv'
-    title_filter = 'manager'
 
     domains = get_domains_from_csv(csv_file_path)
 
@@ -139,4 +138,11 @@ def main(csv_file_path, title_filter):
 
 
 if __name__ == '__main__':
-    main('input_companies.csv', 'manager')
+    parser = argparse.ArgumentParser(description='It receives input file and filter, fetch contacts from waterfall '
+                                                 'api and saves contacts to db and csv')
+    parser.add_argument('csv', type=str, help='path of the csv file')
+    parser.add_argument('filter', type=str, help='filter expression for waterfall api')
+    args = parser.parse_args()
+    csv_path = args.csv
+    filter_expression = args.filter
+    main(csv_path, filter_expression)
