@@ -1,14 +1,16 @@
 import csv
-import io
 import os
 import requests
 from requests import HTTPError
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 from dotenv import load_dotenv
 from collections import deque
+from sqlalchemy.orm import sessionmaker
+from models import Company, Person
 
 load_dotenv()
 WATERFALL_PROSPECT_ENDPOINT = 'https://api.waterfall.to/v1/prospector'
+engine = create_engine(os.getenv("DATABASE_URL"))
 
 
 def get_domains_from_csv(file_path):
@@ -27,19 +29,18 @@ def get_header():
     }
 
 
-# TODO
-# add response.raise_for_status() to check for errors
-# use try catch
 def launch_prospect(domain, title_filter):
     data = {
         'domain': domain,
         'title_filter': title_filter
     }
-    response = requests.post(WATERFALL_PROSPECT_ENDPOINT, json=data, headers=get_header())
-    if response.status_code == 200:
-        return response.json()['job_id']
-    else:
-        print(response.json())
+    try:
+        response = requests.post(WATERFALL_PROSPECT_ENDPOINT, json=data, headers=get_header())
+        response.raise_for_status()
+        return response.json()
+    except HTTPError as e:
+        print("Error while launching prospect for domain {}".format(domain))
+        print(e)
         return None
 
 
@@ -78,13 +79,28 @@ def write_company_list_to_csv(company_list):
         write_company_contacts_to_csv(company, headers)
 
 
-# Function to write contacts to PostgreSQL
-def save_to_db(contacts, db_engine):
-    # Implement DB insertion logic here
-    pass
+def save_to_db(company_contact_list):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    company_data = []
+    contact = []
+    for company_contact in company_contact_list:
+        company_data.append(company_contact['company'])
+        for contact_data in company_contact['persons']:
+            contact = contact + contact_data
+
+    try:
+        session.bulk_insert_mappings(inspect(Company), company_data)
+        session.bulk_insert_mappings(inspect(Person), contact)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
 
 
-# Main function to orchestrate the script
 def main(csv_file_path):
     csv_file_path = 'input.csv'
     title_filter = 'manager'
@@ -120,4 +136,3 @@ def main(csv_file_path):
 
 if __name__ == '__main__':
     main('input_companies.csv', 'output_contacts.csv')
-
