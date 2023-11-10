@@ -40,18 +40,18 @@ def launch_prospect(domain, title_filter):
         return response.json()
     except HTTPError as e:
         print("Error while launching prospect for domain {}".format(domain))
-        print(e)
+        print(response.json())
         return None
 
 
 def find_prospect(job_id):
     try:
-        response = requests.get(WATERFALL_PROSPECT_ENDPOINT + '/' + job_id, headers=get_header())
+        response = requests.get(WATERFALL_PROSPECT_ENDPOINT + '/' + str(job_id), headers=get_header())
         response.raise_for_status()
         return response.json()
     except HTTPError as e:
         print("Error while fetching prospect for job id {}".format(job_id))
-        print(e)
+        print(response.json())
         return None
 
 
@@ -101,7 +101,7 @@ def save_to_db(company_contact_list):
         session.close()
 
 
-def main(csv_file_path):
+def main(csv_file_path, title_filter):
     csv_file_path = 'input.csv'
     title_filter = 'manager'
 
@@ -135,4 +135,4 @@ def main(csv_file_path):
 
 
 if __name__ == '__main__':
-    main('input_companies.csv', 'output_contacts.csv')
+    main('input_companies.csv', 'manager')
