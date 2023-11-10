@@ -130,13 +130,17 @@ def main(csv_file_path, title_filter):
             if result['status'] == 'RUNNING':
                 job_queue.appendleft(job_id)
             elif result['status'] == 'SUCCEEDED':
+                print("Prospect received for job id {}".format(job_id))
                 company_contact_list.append(result['output'])
             else:
                 # will handle FAILED, TIMED_OUT, ABORTED statuses
                 print("Prospect failed for job id {} with status {}".format(job_id, result['status']))
         time.sleep(math.ceil(REQUEST_PERIOD / REQUEST_LIMIT))
 
+    print("Saving to csv ... ")
     save_to_csv(company_contact_list)
+
+    print('Saving to db ... ')
     save_to_db(company_contact_list)
 
 
@@ -150,4 +154,4 @@ if __name__ == '__main__':
     filter_expression = args.filter
     print('Initializing with csv file: {} and filter: {}'.format(csv_path, filter_expression))
     main(csv_path, filter_expression)
-    # main('input.csv', 'ceo')
+    print('--- Completed successfully --- ')
