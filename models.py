@@ -15,7 +15,7 @@ class Person(Base):
     __tablename__ = 'person'
     id = Column(UUID(as_uuid=True), primary_key=True)
     first_name = Column(String(255), nullable=False)
-    last_name = Column(String(255), nullable=False)
+    last_name = Column(String(255))
     linkedin_id = Column(String(255))
     linkedin_url = Column(String(255))
     personal_email = Column(String(255))
