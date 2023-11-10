@@ -84,14 +84,15 @@ def save_to_csv(company_contact_list):
 
 
 def save_to_db(company_contact_list):
-    Session = sessionmaker(bind=engine)
-    session = Session()
 
     company_data = []
     contact = []
     for company_contact in company_contact_list:
         company_data.append(company_contact['company'])
         contact = contact + company_contact['persons']
+
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
     try:
         session.bulk_insert_mappings(inspect(Company), company_data)
