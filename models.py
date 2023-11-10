@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Column, String, Boolean, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -24,6 +24,7 @@ class Person(Base):
     company_id = Column(UUID(as_uuid=True), ForeignKey('company.id'), nullable=False)
     professional_email = Column(String(255))
     mobile_phone = Column(String(20))
+    phone_numbers = Column(ARRAY(String))
     title = Column(String(255), nullable=False)
     seniority = Column(String(255))
     department = Column(String(255))

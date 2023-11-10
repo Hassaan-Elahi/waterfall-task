@@ -15,12 +15,9 @@ load_dotenv()
 engine = create_engine(os.getenv("DATABASE_URL"))
 
 WATERFALL_PROSPECT_ENDPOINT = 'https://api.waterfall.to/v1/prospector'
-
 # As per the documentation of waterfall api, we can make 10 requests per minute
 REQUEST_LIMIT = 10
 REQUEST_PERIOD = 60
-
-
 
 
 def get_domains_from_csv(file_path):
@@ -94,7 +91,6 @@ def save_to_csv(company_contact_list):
 
 
 def save_to_db(company_contact_list):
-
     company_data = []
     contact = []
     for company_contact in company_contact_list:
@@ -103,7 +99,6 @@ def save_to_db(company_contact_list):
 
     Session = sessionmaker(bind=engine)
     session = Session()
-
     try:
         session.bulk_insert_mappings(inspect(Company), company_data)
         session.bulk_insert_mappings(inspect(Person), contact)
@@ -116,7 +111,6 @@ def save_to_db(company_contact_list):
 
 
 def main(csv_file_path, title_filter):
-
     domains = get_domains_from_csv(csv_file_path)
 
     job_ids = []
