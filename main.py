@@ -1,6 +1,8 @@
 import argparse
 import csv
+import math
 import os
+import time
 import requests
 from requests import HTTPError
 from sqlalchemy import create_engine, inspect
@@ -10,8 +12,15 @@ from sqlalchemy.orm import sessionmaker
 from models import Company, Person
 
 load_dotenv()
-WATERFALL_PROSPECT_ENDPOINT = 'https://api.waterfall.to/v1/prospector'
 engine = create_engine(os.getenv("DATABASE_URL"))
+
+WATERFALL_PROSPECT_ENDPOINT = 'https://api.waterfall.to/v1/prospector'
+
+# As per the documentation of waterfall api, we can make 10 requests per minute
+REQUEST_LIMIT = 10
+REQUEST_PERIOD = 60
+
+
 
 
 def get_domains_from_csv(file_path):
@@ -116,6 +125,7 @@ def main(csv_file_path, title_filter):
         if launch_obj:
             print("Prospect launched for domain {} with job id {}".format(domain, launch_obj['job_id']))
             job_ids.append(launch_obj['job_id'])
+        time.sleep(math.ceil(REQUEST_PERIOD / REQUEST_LIMIT))
 
     # FIFO Queue
     job_queue = deque(job_ids)
@@ -132,6 +142,7 @@ def main(csv_file_path, title_filter):
             else:
                 # will handle FAILED, TIMED_OUT, ABORTED statuses
                 print("Prospect failed for job id {} with status {}".format(job_id, result['status']))
+        time.sleep(math.ceil(REQUEST_PERIOD / REQUEST_LIMIT))
 
     save_to_csv(company_contact_list)
     save_to_db(company_contact_list)
