@@ -46,7 +46,10 @@ def launch_prospect(domain, title_filter):
 
 def find_prospect(job_id):
     try:
-        response = requests.get(WATERFALL_PROSPECT_ENDPOINT + '/' + str(job_id), headers=get_header())
+        params = {
+            'job_id': job_id
+        }
+        response = requests.get(WATERFALL_PROSPECT_ENDPOINT, params=params, headers=get_header())
         response.raise_for_status()
         return response.json()
     except HTTPError as e:
@@ -55,28 +58,29 @@ def find_prospect(job_id):
         return None
 
 
-def write_company_contacts_to_csv(company, headers):
-    company_domain = company['domain']
+def write_company_contacts_to_csv(company_contact, headers):
+    company_domain = company_contact['company']['domain']
+    directory = 'contacts'
+    file_path = os.path.join(directory, company_domain + '.csv')
     rows = []
-    with open(company_domain + '.csv', 'w', newline='') as csvfile:
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    with open(file_path, 'w', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=headers)
-        writer.writeheader()
-        for row in company['persons']:
+
+        for row in company_contact['persons']:
             row['phone_numbers'] = ";".join(row['phone_numbers'])
             rows.append(row)
+        writer.writeheader()
         writer.writerows(rows)
 
 
-def write_company_list_to_csv(company_list):
-    headers = [
-        "id", "first_name", "last_name", "linkedin_id", "linkedin_url",
-        "personal_email", "location", "country", "company_id",
-        "company_linkedin_id", "company_name", "company_domain",
-        "professional_email", "mobile_phone", "phone_numbers", "title",
-        "seniority", "department", "quality", "email_verified", "email_verified_status"
-    ]
-    for company in company_list:
-        write_company_contacts_to_csv(company, headers)
+def save_to_csv(company_contact_list):
+    headers = []
+    if len(company_contact_list[0]['persons']) > 0:
+        headers = list(company_contact_list[0]['persons'][0].keys())
+    for company_contact in company_contact_list:
+        write_company_contacts_to_csv(company_contact, headers)
 
 
 def save_to_db(company_contact_list):
@@ -87,8 +91,7 @@ def save_to_db(company_contact_list):
     contact = []
     for company_contact in company_contact_list:
         company_data.append(company_contact['company'])
-        for contact_data in company_contact['persons']:
-            contact = contact + contact_data
+        contact = contact + company_contact['persons']
 
     try:
         session.bulk_insert_mappings(inspect(Company), company_data)
@@ -109,10 +112,10 @@ def main(csv_file_path, title_filter):
 
     job_ids = []
     for domain in domains:
-        job_id = launch_prospect(domain, title_filter=title_filter)
-        if job_id:
-            print("Prospect launched for domain {} with job id {}".format(domain, job_id))
-            job_ids.append(job_id)
+        launch_obj = launch_prospect(domain, title_filter=title_filter)
+        if launch_obj:
+            print("Prospect launched for domain {} with job id {}".format(domain, launch_obj['job_id']))
+            job_ids.append(launch_obj['job_id'])
 
     # FIFO Queue
     job_queue = deque(job_ids)
@@ -130,7 +133,7 @@ def main(csv_file_path, title_filter):
                 # will handle FAILED, TIMED_OUT, ABORTED statuses
                 print("Prospect failed for job id {} with status {}".format(job_id, result['status']))
 
-    write_company_list_to_csv(company_contact_list)
+    save_to_csv(company_contact_list)
     save_to_db(company_contact_list)
 
 
