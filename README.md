@@ -14,8 +14,7 @@ of companies using the Waterfall API. It takes a CSV file containing domain name
 8. Run the script ``python main.py input.csv manager``. The first argument is the path of the input file and the second argument is the filter expression.
 
 
-
 ## Preqrequisites
 - Python 3.x
 - PostgreSQL
-
+- Waterfall API credentials
