@@ -9,12 +9,12 @@ class Company(Base):
     __tablename__ = 'company'
     id = Column(UUID(as_uuid=True), primary_key=True)
     domain = Column(String(255), nullable=False)
-    company_name = Column(String(255), nullable=False)
+    company_name = Column(String(255))
 
 class Person(Base):
     __tablename__ = 'person'
     id = Column(UUID(as_uuid=True), primary_key=True)
-    first_name = Column(String(255), nullable=False)
+    first_name = Column(String(255))
     last_name = Column(String(255))
     linkedin_id = Column(String(255))
     linkedin_url = Column(String(255))
@@ -25,7 +25,7 @@ class Person(Base):
     professional_email = Column(String(255))
     mobile_phone = Column(String(20))
     phone_numbers = Column(ARRAY(String))
-    title = Column(String(255), nullable=False)
+    title = Column(String(255))
     seniority = Column(String(255))
     department = Column(String(255))
     quality = Column(String(50))

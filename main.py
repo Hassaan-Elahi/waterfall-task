@@ -65,29 +65,27 @@ def find_prospect(job_id):
         return None
 
 
-def write_company_contacts_to_csv(company_contact, headers):
+def write_company_contacts_to_csv(company_contact):
     company_domain = company_contact['company']['domain']
     directory = 'contacts'
     file_path = os.path.join(directory, company_domain + '.csv')
-    rows = []
     if not os.path.exists(directory):
         os.makedirs(directory)
-    with open(file_path, 'w', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=headers)
-
-        for row in company_contact['persons']:
-            row['phone_numbers'] = ";".join(row['phone_numbers'])
-            rows.append(row)
-        writer.writeheader()
-        writer.writerows(rows)
+    if len(company_contact['persons']) > 0:
+        rows = []
+        headers = list(company_contact['persons'][0].keys())
+        with open(file_path, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=headers)
+            for row in company_contact['persons']:
+                row['phone_numbers'] = ";".join(row['phone_numbers'])
+                rows.append(row)
+            writer.writeheader()
+            writer.writerows(rows)
 
 
 def save_to_csv(company_contact_list):
-    headers = []
-    if len(company_contact_list[0]['persons']) > 0:
-        headers = list(company_contact_list[0]['persons'][0].keys())
     for company_contact in company_contact_list:
-        write_company_contacts_to_csv(company_contact, headers)
+        write_company_contacts_to_csv(company_contact)
 
 
 def save_to_db(company_contact_list):
@@ -150,4 +148,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     csv_path = args.csv
     filter_expression = args.filter
+    print('Initializing with csv file: {} and filter: {}'.format(csv_path, filter_expression))
     main(csv_path, filter_expression)
+    # main('input.csv', 'ceo')

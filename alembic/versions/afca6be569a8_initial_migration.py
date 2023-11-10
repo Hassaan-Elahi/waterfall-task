@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 7ff5caf627bf
+Revision ID: afca6be569a8
 Revises: 
-Create Date: 2023-11-10 16:43:22.402705
+Create Date: 2023-11-10 17:06:40.835498
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '7ff5caf627bf'
+revision: str = 'afca6be569a8'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -23,12 +23,12 @@ def upgrade() -> None:
     op.create_table('company',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('domain', sa.String(length=255), nullable=False),
-    sa.Column('company_name', sa.String(length=255), nullable=False),
+    sa.Column('company_name', sa.String(length=255), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('person',
     sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('first_name', sa.String(length=255), nullable=False),
+    sa.Column('first_name', sa.String(length=255), nullable=True),
     sa.Column('last_name', sa.String(length=255), nullable=True),
     sa.Column('linkedin_id', sa.String(length=255), nullable=True),
     sa.Column('linkedin_url', sa.String(length=255), nullable=True),
@@ -39,7 +39,7 @@ def upgrade() -> None:
     sa.Column('professional_email', sa.String(length=255), nullable=True),
     sa.Column('mobile_phone', sa.String(length=20), nullable=True),
     sa.Column('phone_numbers', postgresql.ARRAY(sa.String()), nullable=True),
-    sa.Column('title', sa.String(length=255), nullable=False),
+    sa.Column('title', sa.String(length=255), nullable=True),
     sa.Column('seniority', sa.String(length=255), nullable=True),
     sa.Column('department', sa.String(length=255), nullable=True),
     sa.Column('quality', sa.String(length=50), nullable=True),
